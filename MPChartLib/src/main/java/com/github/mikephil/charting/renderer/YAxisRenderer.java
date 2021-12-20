@@ -154,8 +154,9 @@ public class YAxisRenderer extends AxisRenderer {
             Path gridLinePath = mRenderGridLinesPath;
             gridLinePath.reset();
 
+            int start = mYAxis.isDrawBottomYGridLine() ? 0 : 2;
             // draw the grid
-            for (int i = 0; i < positions.length; i += 2) {
+            for (int i = start; i < positions.length; i += 2) {
 
                 // draw a path because lines don't support dashing on lower android versions
                 c.drawPath(linePath(gridLinePath, i, positions), mGridPaint);

@@ -28,6 +28,8 @@ public class YAxis extends AxisBase {
      */
     private boolean mDrawTopYLabelEntry = true;
 
+    private boolean mDrawBottomYGridLine = true;
+
     /**
      * flag that indicates if the axis is inverted or not
      */
@@ -212,6 +214,15 @@ public class YAxis extends AxisBase {
     public boolean isDrawBottomYLabelEntryEnabled() {
         return mDrawBottomYLabelEntry;
     }
+
+    public boolean isDrawBottomYGridLine() {
+        return mDrawBottomYGridLine;
+    }
+
+    public void setDrawBottomYGridLine(boolean enabled) {
+        mDrawBottomYGridLine = enabled;
+    }
+
 
     /**
      * set this to true to enable drawing the top y-label entry. Disabling this can be helpful
