@@ -36,6 +36,8 @@ import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
 
+import androidx.annotation.NonNull;
+
 /**
  * Base-class of LineChart, BarChart, ScatterChart and CandleStickChart.
  *
@@ -269,8 +271,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
             mAxisRendererRight.renderLimitLines(canvas);
 
         mXAxisRenderer.renderAxisLabels(canvas);
-        mAxisRendererLeft.renderAxisLabels(canvas);
-        mAxisRendererRight.renderAxisLabels(canvas);
+        renderYAxisLabels(canvas);
 
         if (isClipValuesToContentEnabled()) {
             clipRestoreCount = canvas.save();
@@ -297,6 +298,11 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
             Log.i(LOG_TAG, "Drawtime: " + drawtime + " ms, average: " + average + " ms, cycles: "
                     + drawCycles);
         }
+    }
+
+    protected void renderYAxisLabels(@NonNull Canvas canvas) {
+        mAxisRendererLeft.renderAxisLabels(canvas);
+        mAxisRendererRight.renderAxisLabels(canvas);
     }
 
     /**

@@ -156,7 +156,7 @@ public class YAxisRendererHorizontalBarChart extends YAxisRenderer {
     }
 
     @Override
-    protected float[] getTransformedPositions() {
+    public float[] getTransformedPositions() {
 
         if(mGetTransformedPositionsBuffer.length != mYAxis.mEntryCount * 2) {
             mGetTransformedPositionsBuffer = new float[mYAxis.mEntryCount * 2];

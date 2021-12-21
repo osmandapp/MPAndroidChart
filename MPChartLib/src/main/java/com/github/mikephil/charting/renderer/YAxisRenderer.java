@@ -202,7 +202,7 @@ public class YAxisRenderer extends AxisRenderer {
      *
      * @return
      */
-    protected float[] getTransformedPositions() {
+    public float[] getTransformedPositions() {
 
         if(mGetTransformedPositionsBuffer.length != mYAxis.mEntryCount * 2){
             mGetTransformedPositionsBuffer = new float[mYAxis.mEntryCount * 2];
