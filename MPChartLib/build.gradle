@@ -49,3 +49,30 @@ artifacts {
     archives sourcesJar
     archives javadocJar
 }
+
+afterEvaluate {
+    publishing {
+        repositories {
+            ivy {
+                url = System.getenv("OSMAND_BINARIES_IVY_ROOT") ?: "./"
+            }
+        }
+
+        publications {
+            release(IvyPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+                organisation = 'net.osmand'
+                module = 'MPAndroidChart'
+                revision = 'master-snapshot'
+            }
+            debug(IvyPublication) {
+                // Applies the component for the release build variant.
+                from components.debug
+                organisation = 'net.osmand'
+                module = 'MPAndroidChart'
+                revision = 'master-snapshot'
+            }
+        }
+    }
+}
