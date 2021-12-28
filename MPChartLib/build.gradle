@@ -37,14 +37,14 @@ afterEvaluate {
                 from components.release
                 organisation = 'net.osmand'
                 module = 'MPAndroidChart'
-                revision = 'master-snapshot'
+                revision = 'custom-snapshot-release'
             }
             debug(IvyPublication) {
                 // Applies the component for the release build variant.
                 from components.debug
                 organisation = 'net.osmand'
                 module = 'MPAndroidChart'
-                revision = 'master-snapshot'
+                revision = 'custom-snapshot-debug'
             }
         }
     }
