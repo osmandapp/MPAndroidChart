@@ -8,12 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.renderer.LineChartRenderer;
 
-import androidx.annotation.ColorInt;
+import java.lang.ref.WeakReference;
+
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -76,18 +76,8 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
         }
 
         float[] positions = mAxisRendererRight.getTransformedPositions();
-        boolean twoYAxis = mData.getDataSetCount() == 2;
         for (int i = 0; i < mAxisLeft.mEntryCount; i++) {
-
-            String leftAxisLabel = mAxisLeft.getFormattedLabel(i);
-            int leftAxisColor = mData.getDataSets().get(0).getColor();
-            LabelDisplayData leftYAxisData = new LabelDisplayData(leftAxisLabel, leftAxisColor);
-
-            LabelDisplayData rightYAxisData = twoYAxis
-                    ? new LabelDisplayData(mAxisRight.getFormattedLabel(i), mData.getDataSets().get(1).getColor())
-                    : null;
-
-            yAxisLabelView.updateLabel(leftYAxisData, rightYAxisData);
+            yAxisLabelView.updateLabel(i);
             yAxisLabelView.resizeLabel();
             float x = mViewPortHandler.contentRight() - yAxisLabelView.getWidth();
             boolean bottomLabel = mAxisLeft.mAxisMinimum == mAxisLeft.mEntries[i];
@@ -109,6 +99,8 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
     }
 
     public abstract static class YAxisLabelView extends FrameLayout {
+
+        private WeakReference<LineChart> chartRef;
 
         public YAxisLabelView(@NonNull Context context, @LayoutRes int layoutId) {
             super(context);
@@ -140,8 +132,7 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
             view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
         }
 
-        public abstract void updateLabel(@NonNull LabelDisplayData leftYAxisData,
-                                         @Nullable LabelDisplayData rightYAxisData);
+        public abstract void updateLabel(int labelIndex);
 
         private void resizeLabel() {
             measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
@@ -155,27 +146,14 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
             draw(canvas);
             canvas.restoreToCount(saveId);
         }
-    }
 
-    public static class LabelDisplayData {
-
-        private final String text;
-        @ColorInt
-        private final int color;
-
-        public LabelDisplayData(@NonNull String text, @ColorInt int color) {
-            this.text = text;
-            this.color = color;
+        @Nullable
+        public LineChart getChart() {
+            return chartRef != null ? chartRef.get() : null;
         }
 
-        @NonNull
-        public String getText() {
-            return text;
-        }
-
-        @ColorInt
-        public int getColor() {
-            return color;
+        public void setChart(@NonNull LineChart chart) {
+            chartRef = new WeakReference<>(chart);
         }
     }
 }
