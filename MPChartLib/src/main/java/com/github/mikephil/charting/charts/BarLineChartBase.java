@@ -212,9 +212,15 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
         if (mXAxis.isEnabled())
             mXAxisRenderer.computeAxis(mXAxis.mAxisMinimum, mXAxis.mAxisMaximum, false);
 
-        mXAxisRenderer.renderAxisLine(canvas);
-        mAxisRendererLeft.renderAxisLine(canvas);
-        mAxisRendererRight.renderAxisLine(canvas);
+        if (mXAxis.isDrawAxisLineBehindData()) {
+            mXAxisRenderer.renderAxisLine(canvas);
+        }
+        if (mAxisLeft.isDrawAxisLineBehindData()) {
+            mAxisRendererLeft.renderAxisLine(canvas);
+        }
+        if (mAxisRight.isDrawAxisLineBehindData()) {
+            mAxisRendererRight.renderAxisLine(canvas);
+        }
 
         if (mXAxis.isDrawGridLinesBehindDataEnabled())
             mXAxisRenderer.renderGridLines(canvas);
@@ -242,6 +248,16 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
         }
 
         mRenderer.drawData(canvas);
+
+        if (!mXAxis.isDrawAxisLineBehindData()) {
+            mXAxisRenderer.renderAxisLine(canvas);
+        }
+        if (!mAxisLeft.isDrawAxisLineBehindData()) {
+            mAxisRendererLeft.renderAxisLine(canvas);
+        }
+        if (!mAxisRight.isDrawAxisLineBehindData()) {
+            mAxisRendererRight.renderAxisLine(canvas);
+        }
 
         if (!mXAxis.isDrawGridLinesBehindDataEnabled())
             mXAxisRenderer.renderGridLines(canvas);
