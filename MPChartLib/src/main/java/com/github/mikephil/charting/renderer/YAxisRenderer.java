@@ -17,6 +17,7 @@ import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.util.List;
+import java.util.Map;
 
 public class YAxisRenderer extends AxisRenderer {
 
@@ -188,9 +189,17 @@ public class YAxisRenderer extends AxisRenderer {
      * @return
      */
     protected Path linePath(Path p, int i, float[] positions) {
+        float y = positions[i + 1];
+        float correctedY = y;
+        float paintWidth = mGridPaint.getStrokeWidth();
+        if (y + paintWidth > mViewPortHandler.contentBottom()) {
+            correctedY = mViewPortHandler.contentBottom() - paintWidth;
+        } else if (y - paintWidth < mViewPortHandler.contentTop()) {
+            correctedY = mViewPortHandler.contentTop() + paintWidth;
+        }
 
-        p.moveTo(mViewPortHandler.offsetLeft(), positions[i + 1]);
-        p.lineTo(mViewPortHandler.contentRight(), positions[i + 1]);
+        p.moveTo(mViewPortHandler.offsetLeft(), correctedY);
+        p.lineTo(mViewPortHandler.contentRight(), correctedY);
 
         return p;
     }
