@@ -117,6 +117,8 @@ public abstract class AxisBase extends ComponentBase {
      */
     protected boolean mDrawGridLinesBehindData = true;
 
+    protected boolean mDrawAxisLineBehindData = true;
+
     /**
      * Extra spacing for `axisMinimum` to be added to automatically calculated `axisMinimum`
      */
@@ -492,6 +494,14 @@ public abstract class AxisBase extends ComponentBase {
 
     public boolean isDrawGridLinesBehindDataEnabled() {
         return mDrawGridLinesBehindData;
+    }
+
+    public void setDrawAxisLineBehindData(boolean enabled) {
+        mDrawAxisLineBehindData = enabled;
+    }
+
+    public boolean isDrawAxisLineBehindData() {
+        return mDrawAxisLineBehindData;
     }
 
     /**
