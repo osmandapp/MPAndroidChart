@@ -27,6 +27,8 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
  */
 public class LineChart extends BarLineChartBase<LineData> implements LineDataProvider {
 
+    private static final boolean SHOW_LABELS_ON_START = true;
+    
     private YAxisLabelView yAxisLabelView;
 
     public LineChart(Context context) {
@@ -79,7 +81,7 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
         for (int i = 0; i < mAxisLeft.mEntryCount; i++) {
             yAxisLabelView.updateLabel(i);
             yAxisLabelView.resizeLabel();
-            float x = mViewPortHandler.contentRight() - yAxisLabelView.getWidth();
+            float x = SHOW_LABELS_ON_START ? 0 : mViewPortHandler.contentRight() - yAxisLabelView.getWidth();
             boolean bottomLabel = mAxisLeft.mAxisMinimum == mAxisLeft.mEntries[i];
             float yOffset = bottomLabel ? yAxisLabelView.getHeight() : yAxisLabelView.getHeight() / 2f;
             float y = positions[i * 2 + 1] - yOffset;
