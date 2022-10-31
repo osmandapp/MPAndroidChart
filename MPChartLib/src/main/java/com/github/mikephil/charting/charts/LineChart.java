@@ -78,6 +78,10 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
         }
 
         float[] positions = mAxisRendererRight.getTransformedPositions();
+        if (positions == null || positions.lenght == 0) {
+            return;
+        }
+        
         for (int i = 0; i < mAxisLeft.mEntryCount; i++) {
             yAxisLabelView.updateLabel(i);
             yAxisLabelView.resizeLabel();
