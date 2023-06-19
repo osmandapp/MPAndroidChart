@@ -101,7 +101,7 @@ public class LineChart extends BarLineChartBase<LineData> implements LineDataPro
         if (mAxisRight.isEnabled() && mAxisRight.isDrawLabelsEnabled()) {
             enabledYAxis++;
         }
-        return mData != null && mData.getDataSetCount() == enabledYAxis;
+        return mData != null && mData.getDataSetCount() >= enabledYAxis;
     }
 
     public abstract static class YAxisLabelView extends FrameLayout {
