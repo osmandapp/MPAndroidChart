@@ -57,8 +57,6 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         mBarBorderPaint.setColor(dataSet.getBarBorderColor());
         mBarBorderPaint.setStrokeWidth(Utils.convertDpToPixel(dataSet.getBarBorderWidth()));
 
-        final boolean drawBorder = dataSet.getBarBorderWidth() > 0.f;
-
         float phaseX = mAnimator.getPhaseX();
         float phaseY = mAnimator.getPhaseY();
 
@@ -86,6 +84,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
     }
 
     protected void drawRects(Canvas canvas, IBarDataSet dataSet, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
+        boolean drawBorder = dataSet.getBarBorderWidth() > 0.f;
         for (int j = 0, pos = 0; j < buffer.size(); j += 4, pos++) {
             if (!mViewPortHandler.isInBoundsTop(buffer.buffer[j + 3])) {
                 break;
@@ -98,11 +97,11 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                 // is out of bounds, reuse colors.
                 mRenderPaint.setColor(dataSet.getColor(j / 4));
             }
-            drawRect(canvas, dataSet, buffer, j, isCustomFill, isInverted);
+            drawRect(canvas, dataSet, buffer, j, pos, isCustomFill, isInverted, drawBorder);
         }
     }
 
-    protected void drawRect(Canvas canvas, IBarDataSet dataSet, BarBuffer buffer, int j, boolean isCustomFill, boolean isInverted) {
+    protected void drawRect(Canvas canvas, IBarDataSet dataSet, BarBuffer buffer, int j, int pos, boolean isCustomFill, boolean isInverted, boolean drawBorder) {
         if (isCustomFill) {
             dataSet.getFill(pos)
                     .fillRect(
@@ -116,7 +115,6 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
             canvas.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
                     buffer.buffer[j + 3], mRenderPaint);
         }
-
         if (drawBorder) {
             canvas.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
                     buffer.buffer[j + 3], mBarBorderPaint);
