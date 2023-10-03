@@ -40,7 +40,6 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
 
     @Override
     public void initBuffers() {
-
         BarData barData = mChart.getBarData();
         mBarBuffers = new HorizontalBarBuffer[barData.getDataSetCount()];
 
@@ -51,12 +50,9 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         }
     }
 
-    private RectF mBarShadowRectBuffer = new RectF();
-
     @Override
-    protected void drawDataSet(Canvas c, IBarDataSet dataSet, int index) {
-
-        Transformer trans = mChart.getTransformer(dataSet.getAxisDependency());
+    protected void drawDataSet(Canvas canvas, IBarDataSet dataSet, int index) {
+        Transformer transformer = mChart.getTransformer(dataSet.getAxisDependency());
 
         mBarBorderPaint.setColor(dataSet.getBarBorderColor());
         mBarBorderPaint.setStrokeWidth(Utils.convertDpToPixel(dataSet.getBarBorderWidth()));
@@ -66,41 +62,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         float phaseX = mAnimator.getPhaseX();
         float phaseY = mAnimator.getPhaseY();
 
-        // draw the bar shadow before the values
-        if (mChart.isDrawBarShadowEnabled()) {
-            mShadowPaint.setColor(dataSet.getBarShadowColor());
-
-            BarData barData = mChart.getBarData();
-
-            final float barWidth = barData.getBarWidth();
-            final float barWidthHalf = barWidth / 2.0f;
-            float x;
-
-            for (int i = 0, count = Math.min((int)(Math.ceil((float)(dataSet.getEntryCount()) * phaseX)), dataSet.getEntryCount());
-                 i < count;
-                 i++) {
-
-                BarEntry e = dataSet.getEntryForIndex(i);
-
-                x = e.getX();
-
-                mBarShadowRectBuffer.top = x - barWidthHalf;
-                mBarShadowRectBuffer.bottom = x + barWidthHalf;
-
-                trans.rectValueToPixel(mBarShadowRectBuffer);
-
-                if (!mViewPortHandler.isInBoundsTop(mBarShadowRectBuffer.bottom))
-                    continue;
-
-                if (!mViewPortHandler.isInBoundsBottom(mBarShadowRectBuffer.top))
-                    break;
-
-                mBarShadowRectBuffer.left = mViewPortHandler.contentLeft();
-                mBarShadowRectBuffer.right = mViewPortHandler.contentRight();
-
-                c.drawRect(mBarShadowRectBuffer, mShadowPaint);
-            }
-        }
+        drawShadow(canvas, transformer, phaseX);
 
         // initialize the buffer
         BarBuffer buffer = mBarBuffers[index];
@@ -111,7 +73,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
 
         buffer.feed(dataSet);
 
-        trans.pointValuesToPixel(buffer.buffer);
+        transformer.pointValuesToPixel(buffer.buffer);
 
         final boolean isCustomFill = dataSet.getFills() != null && !dataSet.getFills().isEmpty();
         final boolean isSingleColor = dataSet.getColors().size() == 1;
@@ -120,39 +82,81 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         if (isSingleColor) {
             mRenderPaint.setColor(dataSet.getColor());
         }
+        drawRects(canvas, buffer, isCustomFill, isSingleColor, isInverted)
+    }
 
+    protected void drawRects(Canvas canvas, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
         for (int j = 0, pos = 0; j < buffer.size(); j += 4, pos++) {
-
-            if (!mViewPortHandler.isInBoundsTop(buffer.buffer[j + 3]))
+            if (!mViewPortHandler.isInBoundsTop(buffer.buffer[j + 3])) {
                 break;
-
-            if (!mViewPortHandler.isInBoundsBottom(buffer.buffer[j + 1]))
+            }
+            if (!mViewPortHandler.isInBoundsBottom(buffer.buffer[j + 1])) {
                 continue;
-
+            }
             if (!isSingleColor) {
                 // Set the color for the currently drawn value. If the index
                 // is out of bounds, reuse colors.
                 mRenderPaint.setColor(dataSet.getColor(j / 4));
             }
 
-            if (isCustomFill) {
-                dataSet.getFill(pos)
-                        .fillRect(
-                                c, mRenderPaint,
-                                buffer.buffer[j],
-                                buffer.buffer[j + 1],
-                                buffer.buffer[j + 2],
-                                buffer.buffer[j + 3],
-                                isInverted ? Fill.Direction.LEFT : Fill.Direction.RIGHT);
-            }
-            else {
-                c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
-                        buffer.buffer[j + 3], mRenderPaint);
-            }
+            drawRect(canvas, buffer, isCustomFill, isSingleColor, isInverted);
+        }
+    }
 
-            if (drawBorder) {
-                c.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
-                        buffer.buffer[j + 3], mBarBorderPaint);
+    protected void drawRect(Canvas canvas, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
+        if (isCustomFill) {
+            dataSet.getFill(pos)
+                    .fillRect(
+                            canvas, mRenderPaint,
+                            buffer.buffer[j],
+                            buffer.buffer[j + 1],
+                            buffer.buffer[j + 2],
+                            buffer.buffer[j + 3],
+                            isInverted ? Fill.Direction.LEFT : Fill.Direction.RIGHT);
+        } else {
+            canvas.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                    buffer.buffer[j + 3], mRenderPaint);
+        }
+
+        if (drawBorder) {
+            canvas.drawRect(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2],
+                    buffer.buffer[j + 3], mBarBorderPaint);
+        }
+    }
+
+	protected RectF shadowRectBuffer = new RectF();
+
+    protected void drawShadow(Canvas canvas, Transformer transformer, float phaseX) {
+        // draw the bar shadow before the values
+        if (mChart.isDrawBarShadowEnabled()) {
+            mShadowPaint.setColor(dataSet.getBarShadowColor());
+
+            BarData barData = mChart.getBarData();
+
+            final float barWidth = barData.getBarWidth();
+            final float barWidthHalf = barWidth / 2.0f;
+            float x;
+
+            for (int i = 0, count = Math.min((int) (Math.ceil((float) (dataSet.getEntryCount()) * phaseX)), dataSet.getEntryCount()); i < count; i++) {
+                BarEntry entry = dataSet.getEntryForIndex(i);
+
+	            x = entry.getX();
+
+	            shadowRectBuffer.top = x - barWidthHalf;
+	            shadowRectBuffer.bottom = x + barWidthHalf;
+
+	            transformer.rectValueToPixel(shadowRectBuffer);
+
+	            if (!mViewPortHandler.isInBoundsTop(shadowRectBuffer.bottom)) {
+		            continue;
+	            }
+	            if (!mViewPortHandler.isInBoundsBottom(shadowRectBuffer.top)) {
+		            break;
+	            }
+	            shadowRectBuffer.left = mViewPortHandler.contentLeft();
+	            shadowRectBuffer.right = mViewPortHandler.contentRight();
+
+                canvas.drawRect(shadowRectBuffer, mShadowPaint);
             }
         }
     }
@@ -245,8 +249,8 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                             Utils.drawImage(
                                     c,
                                     icon,
-                                    (int)px,
-                                    (int)py,
+                                    (int) px,
+                                    (int) py,
                                     icon.getIntrinsicWidth(),
                                     icon.getIntrinsicHeight());
                         }
@@ -316,8 +320,8 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                                 Utils.drawImage(
                                         c,
                                         icon,
-                                        (int)px,
-                                        (int)py,
+                                        (int) px,
+                                        (int) py,
                                         icon.getIntrinsicWidth(),
                                         icon.getIntrinsicHeight());
                             }
@@ -394,8 +398,8 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                                     Utils.drawImage(
                                             c,
                                             icon,
-                                            (int)(x + iconsOffset.x),
-                                            (int)(y + iconsOffset.y),
+                                            (int) (x + iconsOffset.x),
+                                            (int) (y + iconsOffset.y),
                                             icon.getIntrinsicWidth(),
                                             icon.getIntrinsicHeight());
                                 }
