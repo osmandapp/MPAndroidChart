@@ -82,7 +82,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         if (isSingleColor) {
             mRenderPaint.setColor(dataSet.getColor());
         }
-        drawRects(canvas, buffer, isCustomFill, isSingleColor, isInverted)
+        drawRects(canvas, buffer, isCustomFill, isSingleColor, isInverted);
     }
 
     protected void drawRects(Canvas canvas, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
