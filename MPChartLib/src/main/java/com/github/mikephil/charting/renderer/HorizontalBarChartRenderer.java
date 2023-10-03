@@ -62,7 +62,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         float phaseX = mAnimator.getPhaseX();
         float phaseY = mAnimator.getPhaseY();
 
-        drawShadow(canvas, transformer, phaseX);
+        drawShadow(canvas, dataSet, transformer, phaseX);
 
         // initialize the buffer
         BarBuffer buffer = mBarBuffers[index];
@@ -82,10 +82,10 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         if (isSingleColor) {
             mRenderPaint.setColor(dataSet.getColor());
         }
-        drawRects(canvas, buffer, isCustomFill, isSingleColor, isInverted);
+        drawRects(canvas, dataSet, buffer, isCustomFill, isSingleColor, isInverted);
     }
 
-    protected void drawRects(Canvas canvas, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
+    protected void drawRects(Canvas canvas, IBarDataSet dataSet, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
         for (int j = 0, pos = 0; j < buffer.size(); j += 4, pos++) {
             if (!mViewPortHandler.isInBoundsTop(buffer.buffer[j + 3])) {
                 break;
@@ -98,12 +98,11 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                 // is out of bounds, reuse colors.
                 mRenderPaint.setColor(dataSet.getColor(j / 4));
             }
-
-            drawRect(canvas, buffer, isCustomFill, isSingleColor, isInverted);
+            drawRect(canvas, dataSet, buffer, j, isCustomFill, isInverted);
         }
     }
 
-    protected void drawRect(Canvas canvas, BarBuffer buffer, boolean isCustomFill, boolean isSingleColor, boolean isInverted) {
+    protected void drawRect(Canvas canvas, IBarDataSet dataSet, BarBuffer buffer, int j, boolean isCustomFill, boolean isInverted) {
         if (isCustomFill) {
             dataSet.getFill(pos)
                     .fillRect(
@@ -124,9 +123,9 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
         }
     }
 
-	protected RectF shadowRectBuffer = new RectF();
+    protected RectF shadowRectBuffer = new RectF();
 
-    protected void drawShadow(Canvas canvas, Transformer transformer, float phaseX) {
+    protected void drawShadow(Canvas canvas, IBarDataSet dataSet, Transformer transformer, float phaseX) {
         // draw the bar shadow before the values
         if (mChart.isDrawBarShadowEnabled()) {
             mShadowPaint.setColor(dataSet.getBarShadowColor());
@@ -140,21 +139,21 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
             for (int i = 0, count = Math.min((int) (Math.ceil((float) (dataSet.getEntryCount()) * phaseX)), dataSet.getEntryCount()); i < count; i++) {
                 BarEntry entry = dataSet.getEntryForIndex(i);
 
-	            x = entry.getX();
+                x = entry.getX();
 
-	            shadowRectBuffer.top = x - barWidthHalf;
-	            shadowRectBuffer.bottom = x + barWidthHalf;
+                shadowRectBuffer.top = x - barWidthHalf;
+                shadowRectBuffer.bottom = x + barWidthHalf;
 
-	            transformer.rectValueToPixel(shadowRectBuffer);
+                transformer.rectValueToPixel(shadowRectBuffer);
 
-	            if (!mViewPortHandler.isInBoundsTop(shadowRectBuffer.bottom)) {
-		            continue;
-	            }
-	            if (!mViewPortHandler.isInBoundsBottom(shadowRectBuffer.top)) {
-		            break;
-	            }
-	            shadowRectBuffer.left = mViewPortHandler.contentLeft();
-	            shadowRectBuffer.right = mViewPortHandler.contentRight();
+                if (!mViewPortHandler.isInBoundsTop(shadowRectBuffer.bottom)) {
+                    continue;
+                }
+                if (!mViewPortHandler.isInBoundsBottom(shadowRectBuffer.top)) {
+                    break;
+                }
+                shadowRectBuffer.left = mViewPortHandler.contentLeft();
+                shadowRectBuffer.right = mViewPortHandler.contentRight();
 
                 canvas.drawRect(shadowRectBuffer, mShadowPaint);
             }
