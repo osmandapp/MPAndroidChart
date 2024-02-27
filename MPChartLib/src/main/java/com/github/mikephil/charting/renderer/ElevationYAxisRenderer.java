@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.github.mikephil.charting.charts.ElevationChart;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
@@ -64,7 +65,7 @@ public class ElevationYAxisRenderer extends YAxisRenderer {
 
 		LineData chartData = mChart.getLineData();
 		int dataSetCount = chartData.getDataSetCount();
-		LineData lastDataSet = dataSetCount > 0 ? (LineData) chartData.getDataSetByIndex(dataSetCount - 1) : null;
+		LineDataSet lastDataSet = dataSetCount > 0 ? (LineDataSet) chartData.getDataSetByIndex(dataSetCount - 1) : null;
 		if (lastDataSet != null && !mChart.shouldShowLastSet()) {
 			dataSetCount--;
 		}
