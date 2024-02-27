@@ -1,6 +1,8 @@
 
 package com.github.mikephil.charting.utils;
 
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
@@ -16,10 +18,13 @@ import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SizeF;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
+
+import androidx.annotation.NonNull;
 
 import com.github.mikephil.charting.formatter.DefaultValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
@@ -134,6 +139,15 @@ public abstract class Utils {
         }
 
         return px / mMetrics.density;
+    }
+
+    public static int dpToPx(@NonNull Context ctx, float dp) {
+        Resources r = ctx.getResources();
+        return (int) TypedValue.applyDimension(
+                COMPLEX_UNIT_DIP,
+                dp,
+                r.getDisplayMetrics()
+        );
     }
 
     /**
