@@ -24,7 +24,7 @@ import java.util.Iterator;
 
 public class ElevationChart extends LineChart {
 	private static final float PADDING_BETWEEN_LABELS_AND_CONTENT_DP = 6;
-	public static final float GRID_LINE_LENGTH_X_AXIS_DP = 10;
+	public static final float GRID_LINE_LENGTH_X_AXIS_DP = 8;
 	public static final int CHART_LABEL_COUNT = 3;
 
 	private boolean showLastSet = true;
@@ -94,25 +94,32 @@ public class ElevationChart extends LineChart {
 		int dataSetCount = chartData.getDataSetCount();
 		LineDataSet lastDataSet = dataSetCount > 0 ? (LineDataSet) chartData.getDataSetByIndex(dataSetCount - 1) : null;
 		if (lastDataSet != null && !shouldShowLastSet()) {
-			dataSetCount--;
+			--dataSetCount;
 		}
-		Paint paint = mAxisRendererRight.getPaintAxisLabels();
-		float maxMeasuredWidth = 0;
-		for (int i = from; i < to; ++i) {
-			float measuredLabelWidth = 0;
-			if (dataSetCount == 1) {
-				String plainText = getAxisRight().getFormattedLabel(i);
-				measuredLabelWidth = paint.measureText(plainText);
-			} else {
-				String leftText = getAxisLeft().getFormattedLabel(i);
-				String rightText = getAxisRight().getFormattedLabel(i) + ", ";
-				measuredLabelWidth = paint.measureText(rightText) + paint.measureText(leftText);
 
+		Paint paint = mAxisRendererRight.getPaintAxisLabels();
+		float maxMeasuredWidth = 0.0F;
+
+		for (int i = from; i < to; ++i) {
+			float measuredLabelWidth = 0.0F;
+			String leftText;
+			if (dataSetCount == 1) {
+				leftText = getAxisLeft().getFormattedLabel(i);
+				if (lastDataSet instanceof OrderedLineDataSet) {
+					leftText = ((OrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : getAxisRight().getFormattedLabel(i);
+				}
+				measuredLabelWidth = paint.measureText(leftText);
+			} else {
+				leftText = getAxisLeft().getFormattedLabel(i) + ", ";
+				String rightText = getAxisRight().getFormattedLabel(i);
+				measuredLabelWidth = paint.measureText(leftText) + paint.measureText(rightText);
 			}
+
 			if (measuredLabelWidth > maxMeasuredWidth) {
 				maxMeasuredWidth = measuredLabelWidth;
 			}
 		}
+
 		return maxMeasuredWidth;
 	}
 
@@ -126,13 +133,12 @@ public class ElevationChart extends LineChart {
 			if (mAxisRight.isEnabled()) {
 				mAxisRendererRight.computeAxis(mAxisRight.mAxisMinimum, mAxisRight.mAxisMaximum, mAxisRight.isInverted());
 			}
-			mAxisRendererRight.renderGridLines(canvas);
+
+			mAxisRendererLeft.computeAxis(mAxisLeft.mAxisMinimum, mAxisLeft.mAxisMaximum, mAxisLeft.isInverted());
 
 			if (mXAxis.isEnabled()) {
 				mXAxisRenderer.computeAxis(mXAxis.mAxisMinimum, mXAxis.mAxisMaximum, false);
 			}
-			mXAxisRenderer.renderAxisLine(canvas);
-			mXAxisRenderer.renderGridLines(canvas);
 
 			int clipRestoreCount = canvas.save();
 			if (isClipDataToContentEnabled()) {
@@ -161,20 +167,28 @@ public class ElevationChart extends LineChart {
 				mRenderer.drawValues(canvas);
 			}
 
+			mXAxisRenderer.renderGridLines(canvas);
+			mXAxisRenderer.renderAxisLine(canvas);
+			mAxisRendererRight.renderGridLines(canvas);
+
+
 			mLegendRenderer.renderLegend(canvas);
 			drawDescription(canvas);
 			drawMarkers(canvas);
 		}
 	}
 
-	public void setupGPXChart(@NonNull MarkerView markerView, float topOffset, float bottomOffset, int labelsColor, int yAxisGridColor, Typeface typeface, boolean useGesturesAndScale) {
-		Context context = getContext();
+	@Override
+	protected void renderYAxisLabels(@NonNull Canvas canvas) {
+		this.mAxisRendererRight.renderAxisLabels(canvas);
+	}
 
-		setExtraRightOffset(16);
-		setExtraLeftOffset(16);
+	public void setupGPXChart(@NonNull MarkerView markerView, float topOffset, float bottomOffset, int xAxisGridColor, int labelsColor, int yAxisGridColor, Typeface typeface, boolean useGesturesAndScale) {
+		Context context = getContext();
+		setExtraRightOffset(16.0F);
+		setExtraLeftOffset(16.0F);
 		setExtraTopOffset(topOffset);
 		setExtraBottomOffset(bottomOffset);
-
 		setHardwareAccelerationEnabled(true);
 		setTouchEnabled(useGesturesAndScale);
 		setDragEnabled(useGesturesAndScale);
@@ -185,40 +199,41 @@ public class ElevationChart extends LineChart {
 		setDrawBorders(false);
 		getDescription().setEnabled(false);
 		setMaxVisibleValueCount(10);
-		setMinOffset(0f);
+		setMinOffset(0.0F);
 		setDragDecelerationEnabled(false);
-
 		markerView.setChartView(this);
 		setMarker(markerView);
 		setDrawMarkers(true);
 
 		XAxis xAxis = getXAxis();
+		xAxis.setYOffset((GRID_LINE_LENGTH_X_AXIS_DP / 2) + 1);
 		xAxis.setDrawAxisLine(true);
-		xAxis.setAxisLineWidth(1);
-		xAxis.setAxisLineColor(labelsColor);
+		xAxis.setAxisLineWidth(1.0F);
+		xAxis.setAxisLineColor(xAxisGridColor);
 		xAxis.setDrawGridLines(true);
-		xAxis.setGridLineWidth(1f);
-		xAxis.setGridColor(labelsColor);
-		xAxis.enableGridDashedLine(Utils.dpToPx(context, GRID_LINE_LENGTH_X_AXIS_DP), Float.MAX_VALUE, 0f);
-		xAxis.setPosition(BOTTOM);
+		xAxis.setGridLineWidth(1.0F);
+		xAxis.setGridColor(xAxisGridColor);
+		xAxis.enableGridDashedLine((float) Utils.dpToPx(context, GRID_LINE_LENGTH_X_AXIS_DP), Float.MAX_VALUE, 0.0F);
+		xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 		xAxis.setTextColor(labelsColor);
 
-		int dp4 = Utils.dpToPx(context, 4);
+		int dp4 = Utils.dpToPx(context, 4.0F);
 
 		YAxis leftYAxis = getAxisLeft();
+		leftYAxis.setLabelCount(CHART_LABEL_COUNT, true);
 		leftYAxis.setEnabled(false);
 
 		YAxis rightYAxis = getAxisRight();
-		rightYAxis.enableGridDashedLine(dp4, dp4, 0f);
+		rightYAxis.enableGridDashedLine((float) dp4, (float) dp4, 0.0F);
 		rightYAxis.setGridColor(yAxisGridColor);
-		rightYAxis.setGridLineWidth(1f);
+		rightYAxis.setGridLineWidth(1.0F);
 		rightYAxis.setDrawBottomYGridLine(false);
 		rightYAxis.setDrawAxisLine(false);
 		rightYAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
-		rightYAxis.setXOffset(-1f);
-		rightYAxis.setYOffset(10.25f);
+		rightYAxis.setXOffset(-1.0F);
+		rightYAxis.setYOffset(10.25F);
 		rightYAxis.setTypeface(typeface);
-		rightYAxis.setTextSize(10f);
+		rightYAxis.setTextSize(10.0F);
 		rightYAxis.setLabelCount(CHART_LABEL_COUNT, true);
 
 		Legend legend = getLegend();
