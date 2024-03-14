@@ -1,7 +1,5 @@
 package com.github.mikephil.charting.charts;
 
-import static com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -16,6 +14,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IOrderedLineDataSet;
 import com.github.mikephil.charting.renderer.ElevationXAxisRenderer;
 import com.github.mikephil.charting.renderer.ElevationYAxisRenderer;
 import com.github.mikephil.charting.utils.Utils;
@@ -25,6 +24,7 @@ import java.util.Iterator;
 public class ElevationChart extends LineChart {
 	private static final float PADDING_BETWEEN_LABELS_AND_CONTENT_DP = 6;
 	public static final float GRID_LINE_LENGTH_X_AXIS_DP = 8;
+	public static final float PADDING_BETWEEN_X_LABELS_AND_X_LINE = 1;
 	public static final int CHART_LABEL_COUNT = 3;
 
 	private boolean showLastSet = true;
@@ -94,7 +94,7 @@ public class ElevationChart extends LineChart {
 		int dataSetCount = chartData.getDataSetCount();
 		LineDataSet lastDataSet = dataSetCount > 0 ? (LineDataSet) chartData.getDataSetByIndex(dataSetCount - 1) : null;
 		if (lastDataSet != null && !shouldShowLastSet()) {
-			--dataSetCount;
+			dataSetCount--;
 		}
 
 		Paint paint = mAxisRendererRight.getPaintAxisLabels();
@@ -105,8 +105,8 @@ public class ElevationChart extends LineChart {
 			String leftText;
 			if (dataSetCount == 1) {
 				leftText = getAxisLeft().getFormattedLabel(i);
-				if (lastDataSet instanceof OrderedLineDataSet) {
-					leftText = ((OrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : getAxisRight().getFormattedLabel(i);
+				if (lastDataSet instanceof IOrderedLineDataSet) {
+					leftText = ((IOrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : getAxisRight().getFormattedLabel(i);
 				}
 				measuredLabelWidth = paint.measureText(leftText);
 			} else {
@@ -171,7 +171,6 @@ public class ElevationChart extends LineChart {
 			mXAxisRenderer.renderAxisLine(canvas);
 			mAxisRendererRight.renderGridLines(canvas);
 
-
 			mLegendRenderer.renderLegend(canvas);
 			drawDescription(canvas);
 			drawMarkers(canvas);
@@ -185,10 +184,12 @@ public class ElevationChart extends LineChart {
 
 	public void setupGPXChart(@NonNull MarkerView markerView, float topOffset, float bottomOffset, int xAxisGridColor, int labelsColor, int yAxisGridColor, Typeface typeface, boolean useGesturesAndScale) {
 		Context context = getContext();
+
 		setExtraRightOffset(16.0F);
 		setExtraLeftOffset(16.0F);
 		setExtraTopOffset(topOffset);
 		setExtraBottomOffset(bottomOffset);
+
 		setHardwareAccelerationEnabled(true);
 		setTouchEnabled(useGesturesAndScale);
 		setDragEnabled(useGesturesAndScale);
@@ -201,21 +202,22 @@ public class ElevationChart extends LineChart {
 		setMaxVisibleValueCount(10);
 		setMinOffset(0.0F);
 		setDragDecelerationEnabled(false);
+
 		markerView.setChartView(this);
 		setMarker(markerView);
 		setDrawMarkers(true);
-
 		XAxis xAxis = getXAxis();
-		xAxis.setYOffset((GRID_LINE_LENGTH_X_AXIS_DP / 2) + 1);
+		xAxis.setYOffset((GRID_LINE_LENGTH_X_AXIS_DP / 2) + PADDING_BETWEEN_X_LABELS_AND_X_LINE);
 		xAxis.setDrawAxisLine(true);
 		xAxis.setAxisLineWidth(1.0F);
 		xAxis.setAxisLineColor(xAxisGridColor);
 		xAxis.setDrawGridLines(true);
 		xAxis.setGridLineWidth(1.0F);
 		xAxis.setGridColor(xAxisGridColor);
-		xAxis.enableGridDashedLine((float) Utils.dpToPx(context, GRID_LINE_LENGTH_X_AXIS_DP), Float.MAX_VALUE, 0.0F);
+		xAxis.enableGridDashedLine(Utils.dpToPx(context, GRID_LINE_LENGTH_X_AXIS_DP), Float.MAX_VALUE, 0.0F);
 		xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 		xAxis.setTextColor(labelsColor);
+		xAxis.setAvoidFirstLastClipping(true);
 
 		int dp4 = Utils.dpToPx(context, 4.0F);
 
@@ -224,7 +226,7 @@ public class ElevationChart extends LineChart {
 		leftYAxis.setEnabled(false);
 
 		YAxis rightYAxis = getAxisRight();
-		rightYAxis.enableGridDashedLine((float) dp4, (float) dp4, 0.0F);
+		rightYAxis.enableGridDashedLine(dp4, dp4, 0.0F);
 		rightYAxis.setGridColor(yAxisGridColor);
 		rightYAxis.setGridLineWidth(1.0F);
 		rightYAxis.setDrawBottomYGridLine(false);

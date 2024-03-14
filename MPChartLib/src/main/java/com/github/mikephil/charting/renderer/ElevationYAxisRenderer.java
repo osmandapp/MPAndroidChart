@@ -13,6 +13,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IOrderedLineDataSet;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
@@ -50,7 +51,7 @@ public class ElevationYAxisRenderer extends YAxisRenderer {
 				xPos = mViewPortHandler.contentRight() + xoffset;
 			} else {
 				mAxisLabelPaint.setTextAlign(Paint.Align.RIGHT);
-				xPos = (float) c.getWidth() - mChart.getExtraRightOffset() - xoffset;
+				xPos = c.getWidth() - mChart.getExtraRightOffset() - xoffset;
 			}
 
 			drawYLabels(c, xPos, positions, yoffset);
@@ -62,19 +63,20 @@ public class ElevationYAxisRenderer extends YAxisRenderer {
 		int from = mYAxis.isDrawBottomYLabelEntryEnabled() ? 0 : 1;
 		int to = mYAxis.isDrawTopYLabelEntryEnabled() ? mYAxis.mEntryCount : mYAxis.mEntryCount - 1;
 		float xOffset = mYAxis.getLabelXOffset();
+
 		LineData chartData = mChart.getLineData();
 		int dataSetCount = chartData.getDataSetCount();
 		LineDataSet lastDataSet = dataSetCount > 0 ? (LineDataSet) chartData.getDataSetByIndex(dataSetCount - 1) : null;
 		if (lastDataSet != null && !mChart.shouldShowLastSet()) {
-			--dataSetCount;
+			dataSetCount--;
 		}
 
 		for (int i = from; i < to; ++i) {
 			String leftText;
 			if (dataSetCount == 1) {
 				leftText = this.mChart.getAxisLeft().getFormattedLabel(i);
-				if (lastDataSet instanceof OrderedLineDataSet) {
-					leftText = ((OrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : mChart.getAxisRight().getFormattedLabel(i);
+				if (lastDataSet instanceof IOrderedLineDataSet) {
+					leftText = ((IOrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : mChart.getAxisRight().getFormattedLabel(i);
 				}
 				int color = ((ILineDataSet) chartData.getDataSetByIndex(0)).getColor();
 				mAxisLabelPaint.setColor(color);
@@ -88,8 +90,8 @@ public class ElevationYAxisRenderer extends YAxisRenderer {
 				if (startDataSet != null && endDataSet != null) {
 					int leftTextColor = startDataSet.getColor();
 					int rightTextColor = endDataSet.getColor();
-					if (startDataSet instanceof OrderedLineDataSet) {
-						if (((OrderedLineDataSet) startDataSet).isLeftAxis()) {
+					if (startDataSet instanceof IOrderedLineDataSet) {
+						if (((IOrderedLineDataSet) startDataSet).isLeftAxis()) {
 							leftTextColor = startDataSet.getColor();
 							rightTextColor = endDataSet.getColor();
 						} else {

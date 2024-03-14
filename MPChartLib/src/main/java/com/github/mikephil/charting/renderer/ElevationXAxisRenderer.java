@@ -23,7 +23,7 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 
 	@Override
 	public RectF getGridClippingRect() {
-		RectF rectF = new RectF(mViewPortHandler.contentLeft(), mViewPortHandler.contentTop(), mViewPortHandler.contentRight(), mViewPortHandler.contentBottom() + (float) Utils.dpToPx(mChart.getContext(), GRID_LINE_LENGTH_X_AXIS_DP / 2));
+		RectF rectF = new RectF(mViewPortHandler.contentLeft(), mViewPortHandler.contentTop(), mViewPortHandler.contentRight(), mViewPortHandler.contentBottom() + Utils.dpToPx(mChart.getContext(), GRID_LINE_LENGTH_X_AXIS_DP / 2));
 		mGridClippingRect.set(mViewPortHandler.getContentRect());
 		mGridClippingRect.inset(-mAxis.getGridLineWidth(), 0.0F);
 		return rectF;
@@ -71,10 +71,10 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 				if (mXAxis.isAvoidFirstLastClippingEnabled()) {
 					float width;
 					if (i / 2 == mXAxis.mEntryCount - 1 && mXAxis.mEntryCount > 1) {
-						width = (float) Utils.calcTextWidth(mAxisLabelPaint, label);
+						width = Utils.calcTextWidth(mAxisLabelPaint, label);
 						x -= width / 2.0F;
 					} else if (i == 0) {
-						width = (float) Utils.calcTextWidth(mAxisLabelPaint, label);
+						width = Utils.calcTextWidth(mAxisLabelPaint, label);
 						x += width / 2.0F;
 					}
 				}
@@ -86,15 +86,14 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 	@Override
 	protected void computeAxisValues(float min, float max) {
 		int labelCount = mAxis.getLabelCount();
-		double range = (double) Math.abs(max - min);
+		double range = Math.abs(max - min);
 		if (labelCount != 0 && !(range <= 0.0) && !Double.isInfinite(range)) {
-			double rawInterval = range / (double) labelCount;
-			double interval = rawInterval;
+			double interval = range / labelCount;
 			if (mAxis.isGranularityEnabled()) {
-				interval = interval < (double) mAxis.getGranularity() ? (double) mAxis.getGranularity() : interval;
+				interval = interval < mAxis.getGranularity() ? mAxis.getGranularity() : interval;
 			}
 
-			double intervalMagnitude = (double) Utils.roundToNextSignificant(Math.pow(10.0, (double) ((int) Math.log10(interval))));
+			double intervalMagnitude = Utils.roundToNextSignificant(Math.pow(10.0, ((int) Math.log10(interval))));
 			int intervalSigDigit = (int) (interval / intervalMagnitude);
 			if (intervalSigDigit > 5) {
 				interval = Math.floor(10.0 * intervalMagnitude) == 0.0 ? interval : Math.floor(10.0 * intervalMagnitude);
@@ -104,7 +103,7 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 			float offset;
 			int i;
 			if (mAxis.isForceLabelsEnabled()) {
-				interval = (double) ((float) range / (float) (labelCount - 1));
+				interval = ((float) range / (float) (labelCount - 1));
 				this.mAxis.mEntryCount = labelCount;
 				if (mAxis.mEntries.length < labelCount) {
 					mAxis.mEntries = new float[labelCount];
@@ -114,17 +113,17 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 
 				for (i = 0; i < labelCount; ++i) {
 					mAxis.mEntries[i] = offset;
-					offset = (float) ((double) offset + interval);
+					offset += interval;
 				}
 
 				n = labelCount;
 			} else {
-				double first = interval == 0.0 ? 0.0 : Math.ceil((double) min / interval) * interval;
+				double first = interval == 0.0 ? 0.0 : Math.ceil(min / interval) * interval;
 				if (mAxis.isCenterAxisLabelsEnabled()) {
 					first -= interval;
 				}
 				double last = interval == 0.0 ? 0.0 : max;
-				double f = first;
+				double f;
 				if (interval != 0.0 && last != first) {
 					for (f = first; f <= last; f += interval) {
 						++n;
