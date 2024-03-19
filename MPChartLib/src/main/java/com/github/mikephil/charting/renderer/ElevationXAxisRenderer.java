@@ -5,6 +5,7 @@ import static com.github.mikephil.charting.charts.ElevationChart.GRID_LINE_LENGT
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.util.Pair;
 
 import com.github.mikephil.charting.charts.ElevationChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -84,96 +85,58 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 	}
 
 	@Override
-	protected void computeAxisValues(float min, float max) {
-		int labelCount = mAxis.getLabelCount();
-		double range = Math.abs(max - min);
-		if (labelCount != 0 && !(range <= 0.0) && !Double.isInfinite(range)) {
-			double interval = range / labelCount;
-			if (mAxis.isGranularityEnabled()) {
-				interval = interval < mAxis.getGranularity() ? mAxis.getGranularity() : interval;
-			}
+	protected double calculateInterval(double range, int labelCount) {
+		int labelCountForFullInterval = labelCount - 1;
+		double interval = range / labelCountForFullInterval;
+		if (mAxis.isGranularityEnabled())
+			interval = interval < mAxis.getGranularity() ? mAxis.getGranularity() : interval;
 
-			double intervalMagnitude = Utils.roundToNextSignificant(Math.pow(10.0, ((int) Math.log10(interval))));
-			int intervalSigDigit = (int) (interval / intervalMagnitude);
-			if (intervalSigDigit > 5) {
-				interval = Math.floor(10.0 * intervalMagnitude) == 0.0 ? interval : Math.floor(10.0 * intervalMagnitude);
-			}
+		double intervalMagnitude = Utils.roundToNextSignificant(Math.pow(10, (int) Math.log10(interval)));
+		int intervalSigDigit = (int) (interval / intervalMagnitude);
+		if (intervalSigDigit > 5) {
+			interval = Math.floor(10.0 * intervalMagnitude) == 0.0
+					? interval
+					: Math.floor(10.0 * intervalMagnitude);
 
-			int n = mAxis.isCenterAxisLabelsEnabled() ? 1 : 0;
-			float offset;
-			int i;
-			if (mAxis.isForceLabelsEnabled()) {
-				interval = ((float) range / (float) (labelCount - 1));
-				this.mAxis.mEntryCount = labelCount;
-				if (mAxis.mEntries.length < labelCount) {
-					mAxis.mEntries = new float[labelCount];
-				}
+		}
+		return interval;
+	}
 
-				offset = min;
-
-				for (i = 0; i < labelCount; ++i) {
-					mAxis.mEntries[i] = offset;
-					offset += interval;
-				}
-
-				n = labelCount;
-			} else {
-				double first = interval == 0.0 ? 0.0 : Math.ceil(min / interval) * interval;
-				if (mAxis.isCenterAxisLabelsEnabled()) {
-					first -= interval;
-				}
-				double last = interval == 0.0 ? 0.0 : max;
-				double f;
-				if (interval != 0.0 && last != first) {
-					for (f = first; f <= last; f += interval) {
-						++n;
-					}
-				} else if (last == first && n == 0) {
-					n = 1;
-				}
-
-				mAxis.mEntryCount = n;
-				if (mAxis.mEntries.length < n) {
-					mAxis.mEntries = new float[n];
-				}
-
-				f = first;
-
-				for (int j = 0; j < n; ++j) {
-					if (f == 0.0) {
-						f = 0.0;
-					}
-
-					mAxis.mEntries[j] = (float) f;
-					f += interval;
-				}
-			}
-
-			if (interval < 1.0) {
-				mAxis.mDecimals = (int) Math.ceil(-Math.log10(interval));
-			} else {
-				mAxis.mDecimals = 0;
-			}
-
-			if (mAxis.isCenterAxisLabelsEnabled()) {
-				if (this.mAxis.mCenteredEntries.length < n) {
-					mAxis.mCenteredEntries = new float[n];
-				}
-
-				offset = (float) interval / 2.0F;
-
-				for (i = 0; i < n; ++i) {
-					mAxis.mCenteredEntries[i] = mAxis.mEntries[i] + offset;
-				}
-			}
-
-		} else {
-			mAxis.mEntries = new float[0];
-			mAxis.mCenteredEntries = new float[0];
-			mAxis.mEntryCount = 0;
+	@Override
+	protected Pair<Double, Integer> calculateNoForcedLabelCount(double interval, int n, float yMin, float yMax) {
+		double first = interval == 0.0 ? 0.0 : Math.ceil(yMin / interval) * interval;
+		if (mAxis.isCenterAxisLabelsEnabled()) {
+			first -= interval;
 		}
 
-		this.computeSize();
+		double last = interval == 0.0 ? 0.0 : yMax;
+
+		double f;
+		int i;
+
+		if (interval != 0.0 && last != first) {
+			for (f = first; f <= last; f += interval) {
+				++n;
+			}
+		} else if (last == first && n == 0) {
+			n = 1;
+		}
+
+		mAxis.mEntryCount = n;
+
+		if (mAxis.mEntries.length < n) {
+			// Ensure stops contains at least numStops elements.
+			mAxis.mEntries = new float[n];
+		}
+
+		for (f = first, i = 0; i < n; f += interval, ++i) {
+
+			if (f == 0.0) // Fix for negative zero case (Where value == -0.0, and 0.0 == -0.0)
+				f = 0.0;
+
+			mAxis.mEntries[i] = (float) f;
+		}
+		return new Pair<>(interval, n);
 	}
 
 	@Override
