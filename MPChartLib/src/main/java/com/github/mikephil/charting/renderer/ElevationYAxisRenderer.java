@@ -13,6 +13,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IOrderedLineDataSet;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
@@ -69,22 +70,38 @@ public class ElevationYAxisRenderer extends YAxisRenderer {
 		if (lastDataSet != null && !mChart.shouldShowLastSet()) {
 			dataSetCount--;
 		}
+
 		for (int i = from; i < to; ++i) {
+			String leftText;
 			if (dataSetCount == 1) {
-				String plainText = mChart.getAxisRight().getFormattedLabel(i);
-				int color = chartData.getDataSetByIndex(0).getColor();
+				leftText = this.mChart.getAxisLeft().getFormattedLabel(i);
+				if (lastDataSet instanceof IOrderedLineDataSet) {
+					leftText = ((IOrderedLineDataSet) lastDataSet).isLeftAxis() ? leftText : mChart.getAxisRight().getFormattedLabel(i);
+				}
+				int color = ((ILineDataSet) chartData.getDataSetByIndex(0)).getColor();
 				mAxisLabelPaint.setColor(color);
-				c.drawText(plainText, fixedPosition + xOffset, positions[i * 2 + 1] + offset, mAxisLabelPaint);
+				c.drawText(leftText, fixedPosition + xOffset, positions[i * 2 + 1] + offset, mAxisLabelPaint);
 			} else {
-				String leftText = mChart.getAxisLeft().getFormattedLabel(i) + ", ";
+				leftText = mChart.getAxisLeft().getFormattedLabel(i) + ", ";
 				String rightText = mChart.getAxisRight().getFormattedLabel(i);
 				ILineDataSet startDataSet = getDataSet(chartData, true);
 				ILineDataSet endDataSet = getDataSet(chartData, false);
 				float rightTextWidth = mAxisLabelPaint.measureText(rightText);
 				if (startDataSet != null && endDataSet != null) {
-					mAxisLabelPaint.setColor(endDataSet.getColor());
+					int leftTextColor = startDataSet.getColor();
+					int rightTextColor = endDataSet.getColor();
+					if (startDataSet instanceof IOrderedLineDataSet) {
+						if (((IOrderedLineDataSet) startDataSet).isLeftAxis()) {
+							leftTextColor = startDataSet.getColor();
+							rightTextColor = endDataSet.getColor();
+						} else {
+							leftTextColor = endDataSet.getColor();
+							rightTextColor = startDataSet.getColor();
+						}
+					}
+					mAxisLabelPaint.setColor(rightTextColor);
 					c.drawText(rightText, fixedPosition + xOffset, positions[i * 2 + 1] + offset, mAxisLabelPaint);
-					mAxisLabelPaint.setColor(startDataSet.getColor());
+					mAxisLabelPaint.setColor(leftTextColor);
 					c.drawText(leftText, fixedPosition + xOffset - rightTextWidth, positions[i * 2 + 1] + offset, mAxisLabelPaint);
 				} else {
 					c.drawText(rightText, fixedPosition + xOffset, positions[i * 2 + 1] + offset, mAxisLabelPaint);
