@@ -73,10 +73,16 @@ public class ElevationXAxisRenderer extends XAxisRenderer {
 					float width;
 					if (i / 2 == mXAxis.mEntryCount - 1 && mXAxis.mEntryCount > 1) {
 						width = Utils.calcTextWidth(mAxisLabelPaint, label);
-						x -= width / 2.0F;
+						int labelEndPosition = (int) (x + (width / 2));
+						if (!mViewPortHandler.isInBoundsX(labelEndPosition)) {
+							x = mViewPortHandler.contentRight() - (width / 2);
+						}
 					} else if (i == 0) {
 						width = Utils.calcTextWidth(mAxisLabelPaint, label);
-						x += width / 2.0F;
+						int labelStartPosition = (int) (x - (width / 2));
+						if (!mViewPortHandler.isInBoundsX(labelStartPosition)) {
+							x = mViewPortHandler.contentLeft() + (width / 2);
+						}
 					}
 				}
 				drawLabel(c, label, x, pos, anchor, labelRotationAngleDegrees);
