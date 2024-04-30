@@ -178,6 +178,20 @@ public class ElevationChart extends LineChart {
 	}
 
 	@Override
+	protected void autoScale() {
+		final float fromX = getLowestVisibleX();
+		final float toX = getHighestVisibleX();
+
+		mData.calcMinMaxY(fromX, toX);
+		mXAxis.calculate(mData.getXMin(), mData.getXMax());
+
+		mAxisLeft.calculate(mData.getYMin(YAxis.AxisDependency.LEFT), mData.getYMax(YAxis.AxisDependency.LEFT));
+		mAxisRight.calculate(mData.getYMin(YAxis.AxisDependency.RIGHT), mData.getYMax(YAxis.AxisDependency.RIGHT));
+
+		calculateOffsets();
+	}
+
+	@Override
 	protected void renderYAxisLabels(@NonNull Canvas canvas) {
 		this.mAxisRendererRight.renderAxisLabels(canvas);
 	}
