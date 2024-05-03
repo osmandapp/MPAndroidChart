@@ -73,6 +73,10 @@ public class ElevationChart extends LineChart {
 	}
 
 	public void updateDimens(int width, int height) {
+		if (mData == null) {
+			return;
+		}
+
 		float measureText = getMeasuredMaxLabel();
 		Utils.init(getContext());
 		mViewPortHandler.setChartDimens((float) width - measureText - Utils.dpToPx(getContext(), PADDING_BETWEEN_LABELS_AND_CONTENT_DP), (float) height);
