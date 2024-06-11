@@ -8,6 +8,7 @@ import android.graphics.RectF;
 import android.util.Pair;
 
 import com.github.mikephil.charting.charts.ElevationChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.Transformer;
@@ -15,9 +16,9 @@ import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
 public class ElevationXAxisRenderer extends XAxisRenderer {
-	private final ElevationChart mChart;
+	private final LineChart mChart;
 
-	public ElevationXAxisRenderer(ElevationChart mChart, ViewPortHandler viewPortHandler, XAxis xAxis, Transformer trans) {
+	public ElevationXAxisRenderer(LineChart mChart, ViewPortHandler viewPortHandler, XAxis xAxis, Transformer trans) {
 		super(viewPortHandler, xAxis, trans);
 		this.mChart = mChart;
 	}
