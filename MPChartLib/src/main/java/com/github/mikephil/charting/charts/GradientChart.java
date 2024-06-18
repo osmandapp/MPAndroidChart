@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.renderer.GradientXAxisRenderer;
+import com.github.mikephil.charting.utils.Utils;
 
 import java.util.List;
 
@@ -42,11 +43,41 @@ public class GradientChart extends LineChart {
 			for (int i = 0; i < colors.length; i++) {
 				colors[i] = dataColors.get(i);
 			}
-			LinearGradient linearGradient = new LinearGradient(0, 0, mViewPortHandler.getChartWidth(), 0, colors, null, Shader.TileMode.CLAMP);
+			LinearGradient linearGradient = new LinearGradient(mViewPortHandler.getContentRect().left, 0, mViewPortHandler.getContentRect().right, 0, colors, null, Shader.TileMode.CLAMP);
 			paint = new Paint();
 			paint.setDither(true);
 			paint.setShader(linearGradient);
 		}
+	}
+
+	@Override
+	public void calculateOffsets() {
+		if (!mCustomViewPortEnabled) {
+			float offsetLeft = 0f, offsetRight = 0f, offsetTop = 0f, offsetBottom = 0f;
+
+			calculateLegendOffsets(mOffsetsBuffer);
+
+			offsetLeft += mOffsetsBuffer.left;
+			offsetTop += mOffsetsBuffer.top;
+			offsetRight += mOffsetsBuffer.right;
+			offsetBottom += mOffsetsBuffer.bottom;
+
+			offsetTop += getExtraTopOffset();
+			offsetRight += getExtraRightOffset();
+			offsetBottom += getExtraBottomOffset();
+			offsetLeft += getExtraLeftOffset();
+
+			float minOffset = Utils.convertDpToPixel(mMinOffset);
+
+			mViewPortHandler.restrainViewPort(
+					Math.max(minOffset, offsetLeft),
+					Math.max(minOffset, offsetTop),
+					Math.max(minOffset, offsetRight),
+					Math.max(minOffset, offsetBottom));
+		}
+
+		prepareOffsetMatrix();
+		prepareValuePxMatrix();
 	}
 
 	@Override

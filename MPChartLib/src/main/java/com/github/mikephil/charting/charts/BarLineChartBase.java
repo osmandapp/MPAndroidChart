@@ -488,7 +488,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
         }
     }
 
-    private RectF mOffsetsBuffer = new RectF();
+    protected RectF mOffsetsBuffer = new RectF();
 
     @Override
     public void calculateOffsets() {
@@ -978,7 +978,7 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
     /**
      * flag that indicates if a custom viewport offset has been set
      */
-    private boolean mCustomViewPortEnabled = false;
+    protected boolean mCustomViewPortEnabled = false;
 
     /**
      * Sets custom offsets for the current ViewPort (the offsets on the sides of
