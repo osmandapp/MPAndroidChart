@@ -131,6 +131,7 @@ public class ElevationChart extends LineChart {
 	protected void onDraw(Canvas canvas) {
 		if (mData != null) {
 			if (mAutoScaleMinMaxEnabled) {
+				prepareValuePxMatrix();
 				autoScale();
 			}
 
